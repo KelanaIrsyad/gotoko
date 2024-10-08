@@ -34,6 +34,11 @@ type DBConfig struct {
 func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 	fmt.Println("welcome to " + appConfig.AppName)
 
+	server.initializeDB(dbConfig)
+	server.initializeRoutes()
+}
+
+func (server *Server) initializeDB(dbConfig DBConfig) {
 	var err error
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		dbConfig.DB_HOST, dbConfig.DB_USER, dbConfig.DB_PASSWORD, dbConfig.DB_NAME, dbConfig.DB_PORT)
@@ -44,8 +49,15 @@ func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 		log.Fatalf("Failed to connect to the database server: %v", err)
 	}
 
-	server.Router = mux.NewRouter()
-	server.initializeRoutes()
+	for _, model := range RegisterModels() {
+		err = server.DB.Debug().AutoMigrate(model.Model)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	fmt.Println("Database migrated sucessfully")
 }
 
 func (server *Server) Run(addr string) {
