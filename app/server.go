@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/kelanairsyad/gotoko/app/database/seeders"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -36,6 +37,7 @@ func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 
 	server.initializeDB(dbConfig)
 	server.initializeRoutes()
+	seeders.DBSeed(server.DB)
 }
 
 func (server *Server) initializeDB(dbConfig DBConfig) {
